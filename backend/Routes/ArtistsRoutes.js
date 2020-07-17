@@ -72,20 +72,18 @@ router.post(
     (req, res) => {
 
         // set up the artists data to update (does not include artwork)
-        const usersData = {
-            _id: req.body._id,
+        const artistsData = {
             email: req.body.email,
             profile: req.body.profile
         };
 
         // 1) In database, find the user that matches the artist id provided
         ArtistsModel.findOneAndUpdate(
-            {_id: usersData._id },  // search criteria
+            {email: artistsData.email },  // search criteria
             {                           // criteria (keys and values) to update (cannot update artwork via this route)
-                email: req.body.email,
-                profile: req.body.profile
-            },
-            {}, // options, if any
+                profile: artistsData.profile},
+            {useFindAndModify: false,
+             new: true}, // options, if any
             (err, document) => {
 
                 if(err) {
@@ -115,44 +113,49 @@ router.post(
     '/addArt',
     (req, res) => {
         const formData = { 
-            id: req.body.id,
+            email: req.body.email,
             artwork: req.body.artwork
             };
 
         // 1) In database, find the artist that matches the id provided
         ArtistsModel.findOne(
-            {_id: formData.id },
+            {email: req.body.email },
             (err, document) => {
 
-                // 2) If no artist found with the id, return 'not found'message
-                if(!document) {
-                    res.json({message: 'Artist not found'});
-                }
-                
-                else {      // 3) Check if art already assigned to artist
+                if(err) {
+                    // If error, return an error and send message to console
+                    res.json({message: 'error updating artwork'});
+                    console.log(err);
+                } else {
 
-                    if(document.artwork.includes(formData.artwork)) {
-                        // return message saying artwork already assigned
-                        res.json({message: 'Artwork already assigned'});
+                    // 2) If no artist found with the id, return 'not found'message
+                    if(!document) {
+                        res.json({message: 'Artist not found'});
                     }
 
-                    // If not, add ($push) the artwork to the artists list of artwork
-                    else {
-                        ArtistsModel.updateOne(
-                            {_id: document._id},
-                            { $push: {artwork: [formData.artwork] }},
-                            (err) => {
-                                if(err) {
-                                    // if error, return an error and send message to console
-                                    res.json({message: 'error adding artwork'});
-                                    console.log(err);
+                    else {      // 3) Check if art already assigned to artist
+
+                        if(document.artwork.includes(req.body.artwork)) {
+                            // return message saying artwork already assigned
+                            res.json({message: 'Artwork already included'});
+                        }
+
+                        // If not, add ($push) the artwork to the artists list of artwork
+                        else {
+                            ArtistsModel.updateOne(
+                                {email: document.email},
+                                { $push: {artwork: formData.artwork }},
+                                (err) => {
+                                    if(err) {
+                                        // if error, return an error and send message to console
+                                        res.json({message: 'error adding artwork'});
+                                        console.log(err);
                                     }
-                                else {
-                                    // otherwise return message saying artwork added
-                                    res.json({message: 'Artwork added'});
                                 }
-                            }
-                        );
+                            );
+                            // otherwise return message saying artwork added
+                            res.json({message: 'Artwork added'});
+                        }
                     }
                 }
             }
@@ -165,13 +168,13 @@ router.post(
     '/deleteArt',
     (req, res) => {
         const formData = { 
-            id: req.body.id,
+            email: req.body.email,
             artwork: req.body.artwork
             };
 
         // 1) In database, find the artist that matches the id provided
         ArtistsModel.findOne(
-            {_id: formData.id },
+            {email: req.body.email },
             (err, document) => {
 
                 // 2) If no artist found with the id, return 'not found'message
@@ -181,7 +184,7 @@ router.post(
                 
                 else {      // 3) Check if art assigned to artist
 
-                    if(!document.artwork.includes(formData.artwork)) {
+                    if(!document.artwork.includes(req.body.artwork)) {
                         // return message saying artwork already assigned
                         res.json({message: 'Artwork not found'});
                     }
@@ -189,8 +192,8 @@ router.post(
                     // If artwork exists for artist then remove it from artists list of artwork ($pull)
                     else {
                         ArtistsModel.updateOne(
-                            {_id: document._id},
-                            { $pull: {artwork: [formData.artwork] }},
+                            {email: document.email},
+                            { $pull: {artwork: formData.artwork }},
                             (err) => {
                                 if(err) {
                                     // if error, return an error and send message to console

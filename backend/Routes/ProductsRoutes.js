@@ -24,35 +24,42 @@ router.post(
 
         // check if a product with that title for that artists already exists
         ProductsModel.findOne(
-            {title: formData.title,
-            artist: formData.artist },
+            {title: productData.title,
+             artist: productData.artist},
             (err, document) => {
 
-                // If no product found with title & artist then save product
-                if(!document) {
+                if(err) {
+                    // if error, return an error and send message to console
+                    res.json({message: 'error updating product'});
+                    console.log(err);
+                } else {
 
-                    // Save the data to database (products collection)
-                    const newProductModel = new ProductsModel(productData);
-                    newProductModel.save()
+                    // If no product found with title & artist then save product
+                    if(!document) {
 
-                    // if successful then return success messages
-                    .then (
-                        () => {
-                        res.json({message: 'Product POST successfull'});
-                        }
-                    )
-                    
-                    // if error then return error message and post error to console log
-                    .catch(
-                        (e) => {
-                            res.json({message: 'Product POST failed'});
-                            console.log(e);
-                        }
-                    )
-                }
-                else {
-                    // otherwise return message saying product already exists
-                    res.json({message: 'Product already exists'});
+                        // Save the data to database (products collection)
+                        const newProductModel = new ProductsModel(productData);
+                        newProductModel.save()
+
+                        // if successful then return success messages
+                        .then (
+                            () => {
+                            res.json({message: 'Product POST successfull'});
+                            }
+                        )
+                        
+                        // if error then return error message and post error to console log
+                        .catch(
+                            (e) => {
+                                res.json({message: 'Product POST failed'});
+                                console.log(e);
+                            }
+                        )
+                    }
+                    else {
+                        // otherwise return message saying product already exists
+                        res.json({message: 'Product already exists'});
+                    }
                 }
             }
         );
@@ -93,9 +100,9 @@ router.post(
                 likes: productData.likes,
                 image: productData.image,
                 price: productData.price,
-                quantity: productData.quantity  
-            },
-            {}, // options, if any
+                quantity: productData.quantity},
+            {useFindAndModify: false,
+             new: true}, // options, if any
             (err, document) => {
 
                 if(err) {
@@ -131,58 +138,61 @@ router.post(
             id: req.body.id
             };
 
-        // 1) In database, find the product that matches the id provided
+        // In database, find the product that matches the id provided
         ProductsModel.findOne(
-            {_id: formData.id },
+            {_id: req.body.id },
             (err, document) => {
-
-                // 2) If no product found with the id, return 'not found'message
-                if(!document) {
-                    res.json({message: 'Product not found'});
-                }
                 
-                else {      // 3) Otherwise, toggle the likes for the product for the user making the like
+                if(err) {
+                    // If error, return an error and send message to console
+                    res.json({message: 'error updating product'});
+                    console.log(err);
+                } else {
 
-                    if(document.likes.includes(req.user._id)) {
+                   // If no product found with the id, return 'not found'message
+                   if(!document) {
+                       res.json({message: 'Product not found'});
+                   }
 
-                        // if the like already exists (user is in likes array) then remove it ($pull)
-                        // use $pull rather than $pop in case there are more than one occurance of the user id in the array
-                        ProductsModel.updateOne(
-                            {_id: document._id},
-                            { $pull: { likes: [req.user.id] }},
-                            (err) => {
-                                if(err) {
-                                    // if error, return an error and send message to console
-                                    res.json({message: 'error changing like'});
-                                    console.log(err);
-                                    }
-                                else {
-                                    // otherwise return message saying like has been removed
-                                    res.json({message: 'Like removed'});
-                                }
-                            }
-                        );
-                    }
-                    else {
+                   else {      // Otherwise, toggle the likes for the product for the user making the like
 
-                        // if the like does not already exists (user not in likes array) then add user id ($push)
-                        ProductsModel.updateOne(
-                            {_id: document._id},
-                            { $push: {likes: [req.user.id] }},
-                            (err) => {
-                                if(err) {
-                                    // if error, return an error and send message to console
-                                    res.json({message: 'error changing like'});
-                                    console.log(err);
-                                    }
-                                else {
-                                    // otherwise return message saying like has been added
-                                    res.json({message: 'Like removed'});
-                                }
-                            }
-                        );
-                    }
-                }
+                       if(document.likes.includes(req.user._id)) {
+
+                           // if the like already exists (user is in likes array) then remove it ($pull)
+                           // use $pull rather than $pop in case more than one occurance of user id in the array
+                           ProductsModel.updateOne(
+                               {_id: document._id},
+                               { $pull: { likes: req.user.id }},
+                               (err) => {
+                                   if(err) {
+                                       // if error, return an error and send message to console
+                                       res.json({message: 'error changing like'});
+                                       console.log(err);
+                                       }
+                               }
+                           );
+                           // return message saying like has been removed
+                           res.json({message: 'Like removed'});
+                       }
+                       else {
+
+                           // if the like does not already exists (user not in likes array) then add user id ($push)
+                           ProductsModel.updateOne(
+                               {_id: document._id},
+                               { $push: {likes: [req.user.id] }},
+                               (err) => {
+                                   if(err) {
+                                       // if error, return an error and send message to console
+                                       res.json({message: 'error changing like'});
+                                       console.log(err);
+                                       }
+                               }
+                           );
+                           // otherwise return message saying like has been added
+                           res.json({message: 'Like added'});
+                       }
+                   }
+               }
             }
         );
     }
@@ -194,10 +204,10 @@ router.get(
     '/list',
     (req, res) => {
 
-        // 1) fetch all the documents using .find()
+        // fetch all the documents using .find()
         ProductsModel.find()
 
-        // 2) Once the results are ready, use .json() to send the results
+        // Once the results are ready, use .json() to send the results
         .then (
             (results) => {
                 // res.json = res.send() + converts to JSON

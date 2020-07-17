@@ -39,7 +39,7 @@ const UsersSchema = new mongoose.Schema(
             type: Array
         },
         avatar: {
-            type: String,
+            type: String
         },
         date: {
             type: Date,

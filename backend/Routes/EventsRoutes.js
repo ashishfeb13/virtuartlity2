@@ -18,6 +18,7 @@ router.post(
             eventTime: req.body.eventTime,
             artists: req.body.artists,
             artwork: req.body.artwork,
+            attendees: req.body.attendees
         }
 
        // check if event with that criteria already exists
@@ -70,39 +71,44 @@ router.post(
 
         // 1) find the event that matches the id provided
         EventsModel.findOne(
-            {_id: formData.id },
+            {_id: req.body.id },
             (err, document) => {
-
-                // 2) If no event found with the id, return 'not found'message
-                if(!document) {
-                    res.json({message: 'Event not found'});
-                }
                 
-                else {      // 3) Check if user already registered for the event
+                if(err) {
+                    // if error, return an error and send message to console
+                    res.json({message: 'error updating product'});
+                    console.log(err);
+                } else {
 
-                    if(document.attendees.includes(req.user.id)) {
-
-                        // If already exists, return message saying attendee already registered
-                        res.json({message: 'User already registered'});
+                    // 2) If no event found with the id, return 'not found'message
+                    if(!document) {
+                        res.json({message: 'Event not found'});
                     }
 
-                    // If not registered, add ($push) user to attendees list for the event
-                    else {
-                        EventsModel.updateOne(
-                            {_id: document._id},
-                            { $push: {attendees: [req.user.id] }},
-                            (err) => {
-                                if(err) {
-                                    // if error, return an error and send message to console
-                                    res.json({message: 'error adding attendee'});
-                                    console.log(err);
+                    else {      // 3) Check if user already registered for the event
+
+                        if(document.attendees.includes(req.user._id)) {
+
+                            // If already exists, return message saying attendee already registered
+                            res.json({message: 'User already registered'});
+                        }
+
+                        // If not registered, add ($push) user to attendees list for the event
+                        else {
+                            EventsModel.updateOne(
+                                {_id: document._id},
+                                { $push: {attendees: [req.user.id] }},
+                                (err) => {
+                                    if(err) {
+                                        // if error, return an error and send message to console
+                                        res.json({message: 'error adding attendee'});
+                                        console.log(err);
                                     }
-                                else {
-                                    // otherwise return message saying attendee added
-                                    res.json({message: 'Attendee added'});
                                 }
-                            }
-                        );
+                            );
+                            // otherwise return message saying attendee added
+                            res.json({message: 'Attendee added'});
+                        }
                     }
                 }
             }
@@ -120,43 +126,74 @@ router.post(
 
         // 1) In database, find the event that matches the id provided
         EventsModel.findOne(
-            {_id: formData.id },
+            {_id: req.body.id },
             (err, document) => {
 
-                // 2) If no event found with the id, return 'not found'message
-                if(!document) {
-                    res.json({message: 'Event not found'});
-                }
-                
-                else {      // 3) Check if user already attending event
+                if(err) {
+                    // if error, return an error and send message to console
+                    res.json({message: 'error updating product'});
+                    console.log(err);
+                } else {
 
-                    if(!document.attendees.includes(req.user.id)) {
-
-                        // if not listed, return message saying attendee not registered
-                        res.json({message: 'Attendee not listed'});
+                    // 2) If no event found with the id, return 'not found'message
+                    if(!document) {
+                        res.json({message: 'Event not found'});
                     }
 
-                    // If user listed, then remove from attendess list ($pull)
-                    else {
-                        EventsModel.updateOne(
-                            {_id: document._id},
-                            { $pull: {attendees: [req.user.id] }},
-                            (err) => {
-                                if(err) {
-                                    // if error, return an error and send message to console
-                                    res.json({message: 'error removing attendee'});
-                                    console.log(err);
-                                    }
-                                else {
-                                    // otherwise return message saying attendee removed
-                                    res.json({message: 'Attendee removed'});
+                    else {      // 3) Check if user already attending event
+
+                        if(document.attendees.includes(req.user._id)) {
+
+                            // If user listed, then remove from attendess list ($pull)
+                            EventsModel.updateOne(
+                                {_id: document._id},
+                                { $pull: {attendees: req.user.id }},
+                                (err) => {
+                                    if(err) {
+                                        // if error, return an error and send message to console
+                                        res.json({message: 'error removing attendee'});
+                                        console.log(err);
+                                        }
                                 }
-                            }
-                        );
+                            );
+                            // otherwise return message saying attendee removed
+                            res.json({message: 'Attendee removed'});
+                        }
+                        else {
+                            // if not listed, return message saying attendee not registered
+                            res.json({message: 'Attendee not listed'});
+                        }
                     }
                 }
             }
         );
+    }
+);
+
+// A GET route for fetching data from the 'events'collection
+router.get(
+    '/list',
+    (req, res) => {
+
+        // fetch all the documents using .find()
+        EventsModel.find()
+
+        // Once the results are ready, use .json() to send the results
+        .then (
+            (results) => {
+                // res.json = res.send() + converts to JSON
+                res.json(results)
+            }
+        )
+
+        // if error then display it
+        .catch(
+            (e) => {
+                res.json({message: "error fetching events"});
+                console.log(e);
+            }
+        )
+
     }
 );
 

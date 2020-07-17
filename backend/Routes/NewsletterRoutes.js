@@ -15,23 +15,44 @@ router.post(
             sharing: req.body.sharing
         };
 
-        // Save the data to database (products collection)
-        const newNewsletterModel = new NewsletterModel(formData);
-        newNewsletterModel.save()
+        NewsletterModel.findOne(
+            {email: req.body.email},
+            (err, document) => {
 
-        // if successful then display success messages
-        .then (
-            () => {
-            res.json({message: 'Email registered'});
-            }
-        )
+                if(err) {
+                    res.json({message: 'error registering for newsletter'});    
+                    console.log(err);
+                } else {
 
-        // if error then display it
-        .catch(
-            (e) => {
-                res.json({message: 'Email registration failed'});
+                    // If there's already a document with that email, reject the new user request
+                    if(document) {
+                        res.json({message: "Email already registered"});
+                    }
+
+                    // Otherwise create the new user account
+                    else {
+
+                        // Save the data to database (products collection)
+                        const newNewsletterModel = new NewsletterModel(formData);
+                        newNewsletterModel.save()
+
+                        // if successful then display success messages
+                        .then (
+                            () => {
+                            res.json({message: 'Email registered'});
+                            }
+                        )
+                        
+                        // if error then display it
+                        .catch(
+                            (e) => {
+                                res.json({message: 'Email registration failed'});
+                            }
+                        )
+                    }
+                }
             }
-        )
+        );
     }
 );
 
@@ -52,12 +73,13 @@ router.post(
             {                           // criteria (keys and values) to update
                 email: formData.email,
                 marketing: formData.marketing,
-                sharing: formData.sharing 
-            },
-            {}, // options, if any
+                sharing: formData.sharing},
+            {useFindAndModify: false,
+             new: true}, // options, if any
             (err, document) => {
 
                 if(err) {
+                    res.json({message: 'error updating newsletter'});    
                     console.log(err);
                 } else {
                     // 2) If no document is found for the email id, say can't find email
@@ -76,6 +98,34 @@ router.post(
                 }
             }
         );
+    }
+);
+
+
+// A GET route for fetching data from the 'products'collection
+router.get(
+    '/list',
+    (req, res) => {
+
+        // fetch all the documents using .find()
+        NewsletterModel.find()
+
+        // Once the results are ready, use .json() to send the results
+        .then (
+            (results) => {
+                // res.json = res.send() + converts to JSON
+                res.json(results)
+            }
+        )
+
+        // if error then display it
+        .catch(
+            (e) => {
+                res.json({message: "error fetching Newsletter registrations"});
+                console.log(e);
+            }
+        )
+
     }
 );
 

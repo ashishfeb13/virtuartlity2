@@ -61,6 +61,9 @@ const UsersRoutes = require('./routes/UsersRoutes');
 const ArtistsRoutes = require('./routes/ArtistsRoutes');
 const NewsletterRoutes = require('./routes/NewsletterRoutes.js');
 
+// Utilities routes currently not active
+//const UtilitiesRoutes = require('./routes/UtilitiesRoutes.js');
+
 // Create the server object
 const server = express();
 
@@ -81,18 +84,16 @@ passportJwt(passport);
 //
 // need to add database connection string here:
 // ****************************************
-// const dbURL = "mongodb+srv://.......
+const dbURL = "mongodb+srv://admin01:Astr0labz@virtuartlity.95m9h.mongodb.net/VirtuArtlity?retryWrites=true&w=majority"
 // ****************************************
-
+// Enter your database connection URL Ashish Jaiswal ----------------------
+//
+//const dbURL = "mongodb+srv://admin1:test1234@cluster0-1raed.mongodb.net/test?retryWrites=true&w=majority";
+//
 // ----------------------------------------------
 // | connect to MongoDB database using mongoose |
 // ----------------------------------------------
 // 
-// database connection---
-// Enter your database connection URL Ashish Jaiswal ----------------------
-//
-const dbURL = "mongodb+srv://admin1:test1234@cluster0-1raed.mongodb.net/test?retryWrites=true&w=majority";
-//
 mongoose.connect(
     dbURL,
     {
@@ -116,16 +117,24 @@ mongoose.connect(
 // Products routes
 server.use(
     '/products', // translates to http://localhost:8080/products
-//    passport.authenticate('jwt', {session:false}), // Use passport-jwt to authenticate
+    passport.authenticate('jwt', {session:false}), // Use passport-jwt to authenticate
     ProductsRoutes
 );
 
-// Feeds routes - requires jwt passport token
+// Events routes - requires jwt passport token
 server.use(
     '/events',  // translates to http://localhost:8080/events
-//    passport.authenticate('jwt', {session:false}), // Use passport-jwt to authenticate
+    passport.authenticate('jwt', {session:false}), // Use passport-jwt to authenticate
     EventsRoutes
 );
+
+// ** Currently inactive ** Utilities routes - requires jwt passport token
+//server.use(
+//    '/utilities',  // translates to http://localhost:8080/utilities
+//    passport.authenticate('jwt', {session:false}), // Use passport-jwt to authenticate
+//    UtilitiesRoutes
+//);
+
 
 // Users routes
 server.use(
@@ -133,13 +142,14 @@ server.use(
     UsersRoutes
 );
 
-// Users routes
+// Artist routes
 server.use(
     '/artists',  // translates to http://localhost:8080/artists
+    passport.authenticate('jwt', {session:false}), // Use passport-jwt to authenticate
     ArtistsRoutes
 );
 
-// Users routes
+// Newsletter routes
 server.use(
     '/newsletter',  // translates to http://localhost:8080/newsletter
     NewsletterRoutes
