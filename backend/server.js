@@ -88,6 +88,11 @@ passportJwt(passport);
 // | connect to MongoDB database using mongoose |
 // ----------------------------------------------
 // 
+// database connection---
+// Enter your database connection URL Ashish Jaiswal ----------------------
+//
+const dbURL = "mongodb+srv://admin1:test1234@cluster0-1raed.mongodb.net/test?retryWrites=true&w=majority";
+//
 mongoose.connect(
     dbURL,
     {
