@@ -1,0 +1,39 @@
+Ashish-MacBook-Pro:backend ashish$ 
+Ashish-MacBook-Pro:backend ashish$ npm i --save-dev express mongoose nodemon passport passport-jwt jsonwebtoken body-parser cors bcrypt
+
+> bcrypt@5.0.0 install /Users/ashish/Documents/codingbootcamp/virtuartlity/backend/node_modules/bcrypt
+> node-pre-gyp install --fallback-to-build
+
+node-pre-gyp WARN Using needle for node-pre-gyp https download 
+[bcrypt] Success: "/Users/ashish/Documents/codingbootcamp/virtuartlity/backend/node_modules/bcrypt/lib/binding/napi-v3/bcrypt_lib.node" is installed via remote
+
+> nodemon@2.0.4 postinstall /Users/ashish/Documents/codingbootcamp/virtuartlity/backend/node_modules/nodemon
+> node bin/postinstall || exit 0
+
+npm WARN saveError ENOENT: no such file or directory, open '/Users/ashish/Documents/codingbootcamp/virtuartlity/backend/package.json'
+npm notice created a lockfile as package-lock.json. You should commit this file.
+npm WARN enoent ENOENT: no such file or directory, open '/Users/ashish/Documents/codingbootcamp/virtuartlity/backend/package.json'
+npm WARN backend No description
+npm WARN backend No repository field.
+npm WARN backend No README data
+npm WARN backend No license field.
+
++ cors@2.8.5
++ passport-jwt@4.0.0
++ passport@0.4.1
++ mongoose@5.9.24
++ nodemon@2.0.4
++ jsonwebtoken@8.5.1
++ express@4.17.1
++ bcrypt@5.0.0
++ body-parser@1.19.0
+added 269 packages from 196 contributors and audited 271 packages in 8.435s
+
+11 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+Ashish-MacBook-Pro:backend ashish$ pwd
+/Users/ashish/Documents/codingbootcamp/virtuartlity/backend
+Ashish-MacBook-Pro:backend ashish$ 
